@@ -4,11 +4,39 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Authors>Peter van de Pas</Authors>
-    <Company>mnemonics.eu - IT solutions</Company>
+
+    <!-- NuGet Package Metadata -->
     <PackageId>DataLineage.Tracking</PackageId>
     <Version>1.0.0</Version>
+    <Authors>Peter van de Pas</Authors>
     <Description>A generic data lineage tracking library for any mapping solution.</Description>
+    <PackageTags>DataLineage;Tracking;Logging;Mapping;</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>assets/icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/petervdpas/DataLineage.Tracking</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Documentation and Source Link -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EnableSourceLink>true</EnableSourceLink>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+    <!-- Build and Output -->
+    <PackageOutputPath>bin\$(Configuration)</PackageOutputPath>
+    <DebugType>embedded</DebugType>
+    <RestoreLockedMode>true</RestoreLockedMode>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="assets/icon.png" Pack="true" PackagePath="assets/" />
+    <None Include="assets/LICENSE.txt" Pack="true" PackagePath="assets/" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
 </Project>
