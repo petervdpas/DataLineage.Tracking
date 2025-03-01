@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>Peter van de Pas</Authors>
+    <Company>mnemonics.eu - IT solutions</Company>
+    <PackageId>DataLineage.Tracking</PackageId>
+    <Version>1.0.0</Version>
+    <Description>A generic data lineage tracking library for any mapping solution.</Description>
+  </PropertyGroup>
+
+</Project>
