@@ -7,17 +7,17 @@ namespace DataLineage.Tracking.Mapping
     /// <summary>
     /// A wrapper around <see cref="IEntityMapper"/> that adds data lineage tracking.
     /// </summary>
-    public class EntityMapperWithLineage : IEntityMapper
+    public class EntityMapper : IEntityMapper
     {
         private readonly IEntityMapper _mapper;
         private readonly IDataLineageTracker _lineageTracker;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="EntityMapperWithLineage"/>.
+        /// Initializes a new instance of <see cref="EntityMapper"/>.
         /// </summary>
         /// <param name="mapper">The base mapper that performs transformations.</param>
         /// <param name="lineageTracker">The lineage tracker used to log transformations.</param>
-        public EntityMapperWithLineage(IEntityMapper mapper, IDataLineageTracker lineageTracker)
+        public EntityMapper(IEntityMapper mapper, IDataLineageTracker lineageTracker)
         {
             _mapper = mapper;
             _lineageTracker = lineageTracker;
