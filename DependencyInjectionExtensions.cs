@@ -1,7 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using DataLineage.Tracking.Interfaces;
 using DataLineage.Tracking.Mapping;
 using DataLineage.Tracking.Lineage;
+using DataLineage.Tracking.Configuration;
+using System;
 
 namespace DataLineage.Tracking
 {
@@ -12,84 +15,33 @@ namespace DataLineage.Tracking
     public static class DependencyInjectionExtensions
     {
         /// <summary>
-        /// Registers only the Data Lineage Tracker in the dependency injection container.
-        /// Use this method if you need lineage tracking but do not require entity mapping.
-        /// </summary>
-        /// <param name="services">
-        /// The <see cref="IServiceCollection"/> to which the lineage tracker service should be added.
-        /// </param>
-        /// <returns>
-        /// The modified <see cref="IServiceCollection"/> for method chaining.
-        /// </returns>
-        /// <example>
-        /// <code>
-        /// var services = new ServiceCollection();
-        /// services.AddDataLineageTracker();
-        /// var provider = services.BuildServiceProvider();
-        /// var tracker = provider.GetRequiredService&lt;IDataLineageTracker&gt;();
-        /// </code>
-        /// </example>
-        public static IServiceCollection AddDataLineageTracker(this IServiceCollection services)
-        {
-            services.AddSingleton<IDataLineageTracker, DataLineageTracker>();
-            return services;
-        }
-
-        /// <summary>
-        /// Registers only the Entity Mapper in the dependency injection container.
-        /// Use this method if you need entity mapping without lineage tracking.
-        /// </summary>
-        /// <param name="services">
-        /// The <see cref="IServiceCollection"/> to which the entity mapper service should be added.
-        /// </param>
-        /// <returns>
-        /// The modified <see cref="IServiceCollection"/> for method chaining.
-        /// </returns>
-        /// <example>
-        /// <code>
-        /// var services = new ServiceCollection();
-        /// services.AddEntityMapper();
-        /// var provider = services.BuildServiceProvider();
-        /// var mapper = provider.GetRequiredService&lt;IEntityMapper&gt;();
-        /// </code>
-        /// </example>
-        public static IServiceCollection AddEntityMapper(this IServiceCollection services)
-        {
-            services.AddSingleton<IEntityMapper, EntityMapper>();
-            return services;
-        }
-
-        /// <summary>
-        /// Registers both the Data Lineage Tracker and the Entity Mapper in the dependency injection container.
-        /// Ensures that the mapper is injected with the lineage tracker.
+        /// Registers Data Lineage Tracking and Mapping services in the dependency injection container.
+        /// Allows configuration through <see cref="DataLineageOptions"/>.
         /// </summary>
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to which the services should be added.
         /// </param>
+        /// <param name="configureOptions">
+        /// A delegate to configure <see cref="DataLineageOptions"/>. Optional.
+        /// </param>
         /// <returns>
         /// The modified <see cref="IServiceCollection"/> for method chaining.
         /// </returns>
-        /// <example>
-        /// <code>
-        /// var services = new ServiceCollection();
-        /// services.AddDataLineageTracking();
-        /// var provider = services.BuildServiceProvider();
-        /// var tracker = provider.GetRequiredService&lt;IDataLineageTracker&gt;();
-        /// var mapper = provider.GetRequiredService&lt;IEntityMapper&gt;();
-        /// </code>
-        /// </example>
-        public static IServiceCollection AddDataLineageTracking(this IServiceCollection services)
+        public static IServiceCollection AddDataLineageTracking(
+            this IServiceCollection services,
+            Action<DataLineageOptions>? configureOptions = null)
         {
-            // Register lineage tracker first
-            services.AddDataLineageTracker();
+            // Register default configuration using Microsoft's Options pattern
+            services.AddOptions<DataLineageOptions>()
+                    .Configure(configureOptions ?? (_ => { })) // Apply user-defined options if provided
+                    .Services
+                    .AddSingleton<IConfigureOptions<DataLineageOptions>, ConfigureDataLineageOptions>();
 
-            // Ensure EntityMapper does not create unwanted generic mappings
-            services.AddSingleton<EntityMapper>();
-            services.AddSingleton<IEntityMapper>(sp =>
-            {
-                var lineageTracker = sp.GetRequiredService<IDataLineageTracker>();
-                return new EntityMapper(lineageTracker);
-            });
+            // Register lineage tracker
+            services.AddSingleton<IDataLineageTracker, DataLineageTracker>();
+
+            // Register EntityMapper with options
+            services.AddSingleton<IEntityMapper, EntityMapper>();
 
             return services;
         }

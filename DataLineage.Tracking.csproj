@@ -7,7 +7,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>DataLineage.Tracking</PackageId>
-    <Version>1.0.8</Version>
+    <Version>1.0.10</Version>
     <Authors>Peter van de Pas</Authors>
     <Description>A generic data lineage tracking library for any mapping solution.</Description>
     <PackageTags>DataLineage;Tracking;Logging;Mapping;</PackageTags>
@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>

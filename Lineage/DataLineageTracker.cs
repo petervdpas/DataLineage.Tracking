@@ -14,13 +14,14 @@ namespace DataLineage.Tracking.Lineage
 
         /// <inheritdoc/>
         public void Track(
-            string sourceName, string sourceEntity, string sourceField,
+            string sourceName, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
             string transformationRule,
-            string targetName, string targetEntity, string targetField)
+            string targetName, string targetEntity, string targetField, bool targetValidated, string targetDescription)
         {
             _lineageEntries.Add(new LineageEntry(
-                sourceName, sourceEntity, sourceField,
-                transformationRule, targetName, targetEntity, targetField
+                sourceName, sourceEntity, sourceField, sourceValidated, sourceDescription,
+                transformationRule, 
+                targetName, targetEntity, targetField, targetValidated, targetDescription
             ));
         }
 
