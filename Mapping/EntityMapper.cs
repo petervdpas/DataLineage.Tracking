@@ -5,21 +5,18 @@ using DataLineage.Tracking.Interfaces;
 namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
-    /// A wrapper around <see cref="IEntityMapper"/> that adds data lineage tracking.
+    /// A concrete implementation of <see cref="IEntityMapper"/> that supports data lineage tracking.
     /// </summary>
     public class EntityMapper : IEntityMapper
     {
-        private readonly IEntityMapper _mapper;
         private readonly IDataLineageTracker _lineageTracker;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="EntityMapper"/>.
+        /// Initializes a new instance of the <see cref="EntityMapper"/> class.
         /// </summary>
-        /// <param name="mapper">The base mapper that performs transformations.</param>
-        /// <param name="lineageTracker">The lineage tracker used to log transformations.</param>
-        public EntityMapper(IEntityMapper mapper, IDataLineageTracker lineageTracker)
+        /// <param name="lineageTracker">The lineage tracker instance for tracking data transformations.</param>
+        public EntityMapper(IDataLineageTracker lineageTracker)
         {
-            _mapper = mapper;
             _lineageTracker = lineageTracker;
         }
 
@@ -29,17 +26,19 @@ namespace DataLineage.Tracking.Mapping
             Func<IEnumerable<TSource>, TResult> mappingFunction,
             IDataLineageTracker? lineageTracker = null)
         {
-            // Perform the mapping
-            TResult result = _mapper.Map(sources, mappingFunction);
+            // Use the passed lineage tracker if available, otherwise use the injected one
+            var tracker = lineageTracker ?? _lineageTracker;
 
-            // If a lineage tracker is provided, track lineage
-            if (lineageTracker != null)
+            TResult result = mappingFunction.Invoke(sources);
+
+            // Track mappings
+            if (tracker != null)
             {
                 foreach (var source in sources)
                 {
                     if (source != null)
                     {
-                        lineageTracker.Track(
+                        tracker.Track(
                             sourceName: $"{source.GetType().Name}_{Guid.NewGuid().ToString().Substring(0, 8)}",
                             sourceEntity: source.GetType().Name,
                             sourceField: "Unknown Field",
