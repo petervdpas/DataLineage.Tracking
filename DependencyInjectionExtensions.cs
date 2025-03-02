@@ -13,8 +13,22 @@ namespace DataLineage.Tracking
     {
         /// <summary>
         /// Registers only the Data Lineage Tracker in the dependency injection container.
-        /// Use this if you need lineage tracking but not entity mapping.
+        /// Use this method if you need lineage tracking but do not require entity mapping.
         /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to which the lineage tracker service should be added.
+        /// </param>
+        /// <returns>
+        /// The modified <see cref="IServiceCollection"/> for method chaining.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var services = new ServiceCollection();
+        /// services.AddDataLineageTracker();
+        /// var provider = services.BuildServiceProvider();
+        /// var tracker = provider.GetRequiredService&lt;IDataLineageTracker&gt;();
+        /// </code>
+        /// </example>
         public static IServiceCollection AddDataLineageTracker(this IServiceCollection services)
         {
             services.AddSingleton<IDataLineageTracker, DataLineageTracker>();
@@ -22,9 +36,23 @@ namespace DataLineage.Tracking
         }
 
         /// <summary>
-        /// Registers only the Entity Mapper without lineage tracking.
-        /// Use this if you need entity mapping but don't need lineage tracking.
+        /// Registers only the Entity Mapper in the dependency injection container.
+        /// Use this method if you need entity mapping without lineage tracking.
         /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to which the entity mapper service should be added.
+        /// </param>
+        /// <returns>
+        /// The modified <see cref="IServiceCollection"/> for method chaining.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var services = new ServiceCollection();
+        /// services.AddEntityMapper();
+        /// var provider = services.BuildServiceProvider();
+        /// var mapper = provider.GetRequiredService&lt;IEntityMapper&gt;();
+        /// </code>
+        /// </example>
         public static IServiceCollection AddEntityMapper(this IServiceCollection services)
         {
             services.AddSingleton<IEntityMapper, EntityMapper>();
@@ -32,16 +60,37 @@ namespace DataLineage.Tracking
         }
 
         /// <summary>
-        /// Registers both the Data Lineage Tracker and Entity Mapper, ensuring
-        /// that the mapper is injected with the lineage tracker.
+        /// Registers both the Data Lineage Tracker and the Entity Mapper in the dependency injection container.
+        /// Ensures that the mapper is injected with the lineage tracker.
         /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to which the services should be added.
+        /// </param>
+        /// <returns>
+        /// The modified <see cref="IServiceCollection"/> for method chaining.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var services = new ServiceCollection();
+        /// services.AddDataLineageTracking();
+        /// var provider = services.BuildServiceProvider();
+        /// var tracker = provider.GetRequiredService&lt;IDataLineageTracker&gt;();
+        /// var mapper = provider.GetRequiredService&lt;IEntityMapper&gt;();
+        /// </code>
+        /// </example>
         public static IServiceCollection AddDataLineageTracking(this IServiceCollection services)
         {
+            // Register lineage tracker first
             services.AddDataLineageTracker();
+
+            // Ensure EntityMapper does not create unwanted generic mappings
             services.AddSingleton<EntityMapper>();
             services.AddSingleton<IEntityMapper>(sp =>
-                new EntityMapper(sp.GetRequiredService<IDataLineageTracker>())
-            );
+            {
+                var lineageTracker = sp.GetRequiredService<IDataLineageTracker>();
+                return new EntityMapper(lineageTracker);
+            });
+
             return services;
         }
     }
