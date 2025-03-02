@@ -19,7 +19,7 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// The unique identifier or name of the source instance.
         /// </summary>
-        public string SourceName { get; set; }
+        public string SourceSystem { get; set; }
 
         /// <summary>
         /// The entity type of the source.
@@ -49,7 +49,7 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// The unique identifier or name of the target instance.
         /// </summary>
-        public string TargetName { get; set; }
+        public string TargetSystem { get; set; }
 
         /// <summary>
         /// The entity type of the target.
@@ -77,13 +77,13 @@ namespace DataLineage.Tracking.Models
         /// </summary>
         public LineageEntry()
         {
-            SourceName = string.Empty;
+            SourceSystem = string.Empty;
             SourceEntity = string.Empty;
             SourceField = string.Empty;
             SourceValidated = false;
             SourceDescription = string.Empty;
             TransformationRule = string.Empty;
-            TargetName = string.Empty;
+            TargetSystem = string.Empty;
             TargetEntity = string.Empty;
             TargetField = string.Empty;
             TargetValidated = false;
@@ -93,29 +93,29 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="LineageEntry"/> class with provided values.
         /// </summary>
-        /// <param name="sourceName">The unique identifier or name of the source instance.</param>
+        /// <param name="sourceSystem">The unique identifier or name of the source instance.</param>
         /// <param name="sourceEntity">The entity type of the source.</param>
         /// <param name="sourceField">The specific field in the source entity.</param>
         /// <param name="sourceValidated">Indicates if the source field is validated.</param>
         /// <param name="sourceDescription">A description of the source field.</param>
         /// <param name="transformationRule">The transformation rule applied.</param>
-        /// <param name="targetName">The unique identifier or name of the target instance.</param>
+        /// <param name="targetSystem">The unique identifier or name of the target instance.</param>
         /// <param name="targetEntity">The entity type of the target.</param>
         /// <param name="targetField">The specific field in the target entity.</param>
         /// <param name="targetValidated">Indicates if the target field is validated.</param>
         /// <param name="targetDescription">A description of the target field.</param>
         public LineageEntry(
-            string sourceName, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
+            string sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
             string transformationRule,
-            string targetName, string targetEntity, string targetField, bool targetValidated, string targetDescription)
+            string targetSystem, string targetEntity, string targetField, bool targetValidated, string targetDescription)
         {
-            SourceName = sourceName;
+            SourceSystem = sourceSystem;
             SourceEntity = sourceEntity;
             SourceField = sourceField;
             SourceValidated = sourceValidated;
             SourceDescription = sourceDescription;
             TransformationRule = transformationRule;
-            TargetName = targetName;
+            TargetSystem = targetSystem;
             TargetEntity = targetEntity;
             TargetField = targetField;
             TargetValidated = targetValidated;
@@ -143,7 +143,7 @@ namespace DataLineage.Tracking.Models
         /// <returns>An integer hash code.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(SourceEntity, SourceField, TransformationRule, TargetEntity, TargetField);
+            return HashCode.Combine(SourceSystem, SourceEntity, SourceField, TransformationRule, TargetSystem, TargetEntity, TargetField);
         }
 
         /// <summary>
@@ -152,10 +152,10 @@ namespace DataLineage.Tracking.Models
         /// <returns>A string representation of the data lineage entry.</returns>
         public override string ToString()
         {
-            return $"{SourceName}.{SourceEntity}.{SourceField} " +
+            return $"{SourceSystem}.{SourceEntity}.{SourceField} " +
                    $"(✔: {SourceValidated}, {SourceDescription}) " +
                    $"➡ [{TransformationRule}] ➡ " +
-                   $"{TargetName}.{TargetEntity}.{TargetField} " +
+                   $"{TargetSystem}.{TargetEntity}.{TargetField} " +
                    $"(✔: {TargetValidated}, {TargetDescription})";
         }
 

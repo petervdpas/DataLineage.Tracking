@@ -5,6 +5,7 @@ using DataLineage.Tracking.Mapping;
 using DataLineage.Tracking.Lineage;
 using DataLineage.Tracking.Configuration;
 using System;
+using DataLineage.Tracking.Sinks;
 
 namespace DataLineage.Tracking
 {
@@ -16,7 +17,7 @@ namespace DataLineage.Tracking
     {
         /// <summary>
         /// Registers Data Lineage Tracking and Mapping services in the dependency injection container.
-        /// Allows configuration through <see cref="DataLineageOptions"/>.
+        /// Allows configuration through <see cref="DataLineageOptions"/> and optional sinks.
         /// </summary>
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to which the services should be added.
@@ -24,23 +25,27 @@ namespace DataLineage.Tracking
         /// <param name="configureOptions">
         /// A delegate to configure <see cref="DataLineageOptions"/>. Optional.
         /// </param>
+        /// <param name="sinks">
+        /// Optional sinks to store lineage data (e.g., file sink). Defaults to an in-memory tracker if empty.
+        /// </param>
         /// <returns>
         /// The modified <see cref="IServiceCollection"/> for method chaining.
         /// </returns>
         public static IServiceCollection AddDataLineageTracking(
             this IServiceCollection services,
-            Action<DataLineageOptions>? configureOptions = null)
+            Action<DataLineageOptions>? configureOptions = null,
+            params ILineageSink[] sinks)
         {
-            // Register default configuration using Microsoft's Options pattern
+            // Register configuration
             services.AddOptions<DataLineageOptions>()
-                    .Configure(configureOptions ?? (_ => { })) // Apply user-defined options if provided
+                    .Configure(configureOptions ?? (_ => { }))
                     .Services
                     .AddSingleton<IConfigureOptions<DataLineageOptions>, ConfigureDataLineageOptions>();
 
-            // Register lineage tracker
-            services.AddSingleton<IDataLineageTracker, DataLineageTracker>();
+            // Register lineage tracker with optional sinks
+            services.AddSingleton<IDataLineageTracker>(sp => new DataLineageTracker(sinks));
 
-            // Register EntityMapper with options
+            // Register EntityMapper
             services.AddSingleton<IEntityMapper, EntityMapper>();
 
             return services;
