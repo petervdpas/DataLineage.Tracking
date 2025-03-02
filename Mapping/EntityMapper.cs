@@ -31,21 +31,26 @@ namespace DataLineage.Tracking.Mapping
 
             TResult result = mappingFunction.Invoke(sources);
 
-            // Track mappings
-            if (tracker != null)
+            // Track mappings **only if explicit mappings exist**
+            if (tracker != null && mappingFunction != null)
             {
                 foreach (var source in sources)
                 {
-                    if (source != null)
+                    if (source == null) continue;
+                    
+                    var sourceType = source.GetType().Name;
+
+                    // Ensure we only track when mappings are defined
+                    if (mappingFunction.Method.Name != "Invoke")
                     {
                         tracker.Track(
-                            sourceName: $"{source.GetType().Name}_{Guid.NewGuid().ToString().Substring(0, 8)}",
-                            sourceEntity: source.GetType().Name,
-                            sourceField: "Unknown Field",
-                            transformationRule: "Generic Mapping Rule",
+                            sourceName: $"{sourceType}_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                            sourceEntity: sourceType,
+                            sourceField: "Explicit Mapping Only",
+                            transformationRule: "Defined Mapping Rule",
                             targetName: $"{typeof(TResult).Name}_{Guid.NewGuid().ToString().Substring(0, 8)}",
                             targetEntity: typeof(TResult).Name,
-                            targetField: "Unknown Field"
+                            targetField: "Explicit Mapping Only"
                         );
                     }
                 }
