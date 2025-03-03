@@ -6,6 +6,8 @@ using DataLineage.Tracking.Lineage;
 using DataLineage.Tracking.Configuration;
 using System;
 using DataLineage.Tracking.Sinks;
+using System.Reflection;
+using System.Linq;
 
 namespace DataLineage.Tracking
 {
@@ -22,6 +24,7 @@ namespace DataLineage.Tracking
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to which the services should be added.
         /// </param>
+        /// <param name="assembly"></param>
         /// <param name="configureOptions">
         /// A delegate to configure <see cref="DataLineageOptions"/>. Optional.
         /// </param>
@@ -33,6 +36,7 @@ namespace DataLineage.Tracking
         /// </returns>
         public static IServiceCollection AddDataLineageTracking(
             this IServiceCollection services,
+            Assembly assembly,
             Action<DataLineageOptions>? configureOptions = null,
             params ILineageSink[] sinks)
         {
@@ -45,8 +49,19 @@ namespace DataLineage.Tracking
             // Register lineage tracker with optional sinks
             services.AddSingleton<IDataLineageTracker>(sp => new DataLineageTracker(sinks));
 
-            // Register EntityMapper
-            services.AddSingleton<IEntityMapper, EntityMapper>();
+            var implTypes = assembly.GetTypes()
+                .Where(x => x.IsClass && !x.IsAbstract &&
+                            x.BaseType != null &&
+                            x.BaseType.IsGenericType &&
+                            x.BaseType == typeof(BaseMapper<,>))
+                .ToList();
+
+            foreach (var implementationType in implTypes)
+            {
+                var interfaceType = implementationType.GetInterfaces()
+                    .FirstOrDefault(x => x.IsGenericType && x.GetType() == typeof(IEntityMapper<,>));
+                services.AddSingleton(interfaceType!, implementationType);
+            }
 
             return services;
         }

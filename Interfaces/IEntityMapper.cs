@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataLineage.Tracking.Interfaces
 {
@@ -7,22 +7,21 @@ namespace DataLineage.Tracking.Interfaces
     /// Defines an interface for mapping source objects to target objects.
     /// Supports tracking data lineage during transformations.
     /// </summary>
-    public interface IEntityMapper
+    /// <typeparam name="TSource">The type of the source data.</typeparam>
+    /// <typeparam name="TResult">The type of the mapped result.</typeparam>
+    public interface IEntityMapper<TSource, TResult>
     {
         /// <summary>
-        /// Maps a collection of source objects to a target object.
-        /// Optionally supports data lineage tracking.
+        /// Maps a collection of source data objects to the result type.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source objects.</typeparam>
-        /// <typeparam name="TResult">The type of the target object.</typeparam>
-        /// <param name="sources">The collection of source objects.</param>
-        /// <param name="mappingFunction">The function to transform sources into a target object.</param>
-        /// <param name="lineageTracker">An optional lineage tracker to record mapping details.</param>
-        /// <returns>The mapped target object.</returns>
-        TResult Map<TSource, TResult>(
-            IEnumerable<TSource> sources,
-            Func<IEnumerable<TSource>, TResult> mappingFunction,
-            IDataLineageTracker? lineageTracker = null
-        );
+        /// <param name="sourceData">The collection of source objects to be mapped.</param>
+        /// <returns>The mapped result object.</returns>
+        TResult Map(IEnumerable<TSource> sourceData);
+
+        /// <summary>
+        /// Tracks data lineage asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        Task Track();
     }
 }
