@@ -7,23 +7,23 @@ namespace DataLineage.Tracking.Sinks
 {
     /// <summary>
     /// Stores lineage data in a JSON file.
-    /// Supports append and overwrite modes.
+    /// Supports append mode (true = keep history, false = overwrite).
     /// </summary>
     public class FileLineageSink : ILineageSink
     {
         private readonly string _filePath;
-        private readonly bool _overwrite;
+        private readonly bool _append;
         private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
         /// <summary>
         /// Initializes a new instance of <see cref="FileLineageSink"/>.
         /// </summary>
         /// <param name="filePath">The file path where lineage data will be stored.</param>
-        /// <param name="overwrite">Whether to overwrite the file (true) or append new lineage entries (false).</param>
-        public FileLineageSink(string filePath, bool overwrite = false)
+        /// <param name="append">If true, appends new entries instead of overwriting the file.</param>
+        public FileLineageSink(string filePath, bool append = true)
         {
             _filePath = filePath;
-            _overwrite = overwrite;
+            _append = append;
         }
 
         /// <summary>
@@ -34,13 +34,17 @@ namespace DataLineage.Tracking.Sinks
         {
             List<LineageEntry> existingEntries = new();
 
-            if (!_overwrite && File.Exists(_filePath))
+            // Load existing data only if appending
+            if (_append && File.Exists(_filePath))
             {
                 string json = File.ReadAllText(_filePath);
                 existingEntries = JsonSerializer.Deserialize<List<LineageEntry>>(json) ?? [];
             }
 
+            // Add new lineage entries
             existingEntries.AddRange(entries);
+
+            // Write to file (overwrite or append based on _append flag)
             File.WriteAllText(_filePath, JsonSerializer.Serialize(existingEntries, _jsonOptions));
         }
     }
