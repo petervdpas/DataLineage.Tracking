@@ -16,6 +16,6 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="sources">The collection of source objects.</param>
         /// <param name="result">The mapped target object.</param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
-        Task Track(IEnumerable<TSource> sources, TResult result);
+        Task Track(List<TSource> sources, TResult result);
     }
 }

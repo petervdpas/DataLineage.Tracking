@@ -14,6 +14,6 @@ namespace DataLineage.Tracking.Interfaces
         /// </summary>
         /// <param name="sourceData">The collection of source objects to be mapped.</param>
         /// <returns>The mapped result object.</returns>
-        TResult Map(IEnumerable<TSource> sourceData);
+        TResult Map(List<TSource> sourceData);
     }
 }

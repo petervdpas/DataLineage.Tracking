@@ -27,10 +27,10 @@ namespace DataLineage.Tracking.Mapping
         }
 
         /// <inheritdoc/>
-        public abstract TResult Map(IEnumerable<TSource> sources);
+        public abstract TResult Map(List<TSource> sources);
 
         /// <inheritdoc/>
-        public virtual async Task Track(IEnumerable<TSource> sources, TResult result)
+        public virtual async Task Track(List<TSource> sources, TResult result)
         {
             await Task.CompletedTask;
         }

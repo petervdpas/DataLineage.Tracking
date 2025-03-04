@@ -16,6 +16,6 @@ namespace DataLineage.Tracking.Mapping
         /// </summary>
         /// <param name="sourceData">The collection of source data to be mapped.</param>
         /// <returns>The mapped result entity.</returns>
-        public abstract TResult Map(IEnumerable<TSource> sourceData);
+        public abstract TResult Map(List<TSource> sourceData);
     }
 }
