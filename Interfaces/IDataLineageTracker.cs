@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DataLineage.Tracking.Models;
 
 namespace DataLineage.Tracking.Interfaces
@@ -10,7 +11,7 @@ namespace DataLineage.Tracking.Interfaces
     public interface IDataLineageTracker
     {
         /// <summary>
-        /// Tracks a data transformation from a source field to a target field.
+        /// Tracks a data transformation asynchronously from a source field to a target field.
         /// </summary>
         /// <param name="sourceName">The unique identifier or instance name of the source.</param>
         /// <param name="sourceEntity">The type of entity the source belongs to.</param>
@@ -23,7 +24,8 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="targetField">The specific field in the target entity that received the transformed data.</param>
         /// <param name="targetValidated">Indicates whether the target field is approved by governance.</param>
         /// <param name="targetDescription">Additional context or business meaning of the target field.</param>
-        void Track(
+        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        Task TrackAsync(
             string sourceName, 
             string sourceEntity, 
             string sourceField, 
@@ -37,9 +39,9 @@ namespace DataLineage.Tracking.Interfaces
             string targetDescription);
 
         /// <summary>
-        /// Retrieves all recorded lineage entries, showing how data was mapped from sources to targets.
+        /// Retrieves all recorded lineage entries asynchronously, showing how data was mapped from sources to targets.
         /// </summary>
-        /// <returns>A list of <see cref="LineageEntry"/> objects representing the transformation history.</returns>
-        List<LineageEntry> GetLineage();
+        /// <returns>A task resolving to a list of <see cref="LineageEntry"/> objects representing the transformation history.</returns>
+        Task<List<LineageEntry>> GetLineageAsync();
     }
 }
