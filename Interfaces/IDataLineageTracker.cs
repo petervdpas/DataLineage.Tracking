@@ -5,7 +5,7 @@ namespace DataLineage.Tracking.Interfaces
 {
     /// <summary>
     /// Defines an interface for tracking data lineage during transformations.
-    /// This allows mapping operations to capture and record the flow of data from source to target.
+    /// Enables mapping operations to capture and record the flow of data from source to target.
     /// </summary>
     public interface IDataLineageTracker
     {
@@ -15,14 +15,14 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="sourceName">The unique identifier or instance name of the source.</param>
         /// <param name="sourceEntity">The type of entity the source belongs to.</param>
         /// <param name="sourceField">The specific field in the source entity that was transformed.</param>
-        /// <param name="sourceValidated">Indicates if the source field is approved by governance.</param>
-        /// <param name="sourceDescription">A description providing additional context about the source field.</param>
-        /// <param name="transformationRule">A description of how the data was transformed.</param>
+        /// <param name="sourceValidated">Indicates whether the source field is approved by governance.</param>
+        /// <param name="sourceDescription">Additional context or business meaning of the source field.</param>
+        /// <param name="transformationRule">A description of the transformation logic applied to the data.</param>
         /// <param name="targetName">The unique identifier or instance name of the target.</param>
         /// <param name="targetEntity">The type of entity the target belongs to.</param>
         /// <param name="targetField">The specific field in the target entity that received the transformed data.</param>
-        /// <param name="targetValidated">Indicates if the target field is approved by governance.</param>
-        /// <param name="targetDescription">A description providing additional context about the target field.</param>
+        /// <param name="targetValidated">Indicates whether the target field is approved by governance.</param>
+        /// <param name="targetDescription">Additional context or business meaning of the target field.</param>
         void Track(
             string sourceName, 
             string sourceEntity, 
@@ -37,7 +37,7 @@ namespace DataLineage.Tracking.Interfaces
             string targetDescription);
 
         /// <summary>
-        /// Retrieves the recorded lineage entries, showing how data was mapped from sources to targets.
+        /// Retrieves all recorded lineage entries, showing how data was mapped from sources to targets.
         /// </summary>
         /// <returns>A list of <see cref="LineageEntry"/> objects representing the transformation history.</returns>
         List<LineageEntry> GetLineage();

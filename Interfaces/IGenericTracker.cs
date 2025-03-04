@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace DataLineage.Tracking.Interfaces
 {
     /// <summary>
-    /// Defines an interface for mappers that support lineage tracking.
+    /// Defines an interface for generic entity mappers that also support data lineage tracking.
     /// </summary>
     /// <typeparam name="TResult">The type of the mapped target object.</typeparam>
     public interface IGenericTracker<TResult> : IGenericMapper<TResult>
@@ -12,9 +12,13 @@ namespace DataLineage.Tracking.Interfaces
         /// <summary>
         /// Tracks data lineage asynchronously for a mapping operation.
         /// </summary>
-        /// <param name="sources">The collection of source objects.</param>
-        /// <param name="result">The mapped target object.</param>
-        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        /// <param name="sources">
+        /// A collection of source objects of various types that contributed to the mapping.
+        /// </param>
+        /// <param name="result">The resulting mapped object of type <typeparamref name="TResult"/>.</param>
+        /// <returns>
+        /// A task that completes once the data lineage has been recorded asynchronously.
+        /// </returns>
         Task Track(List<object> sources, TResult result);
     }
 }

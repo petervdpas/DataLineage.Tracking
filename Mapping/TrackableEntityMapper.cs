@@ -5,15 +5,16 @@ using DataLineage.Tracking.Interfaces;
 namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
-    /// Represents an abstract base class for mappers that track lineage.
-    /// Implements <see cref="IEntityTracker{TSource, TResult}"/>.
+    /// Represents an abstract base class for entity mappers that support lineage tracking.
+    /// Implements <see cref="IEntityTracker{TSource, TResult}"/> to provide mapping functionality with lineage recording.
     /// </summary>
-    /// <typeparam name="TSource">The type of the source objects.</typeparam>
+    /// <typeparam name="TSource">The type of the source object.</typeparam>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
     public abstract class TrackableEntityMapper<TSource, TResult> : IEntityTracker<TSource, TResult>
     {
         /// <summary>
-        /// The lineage tracker instance used for tracking data transformations.
+        /// The lineage tracker instance used to record data transformations.
+        /// This is available to derived classes for tracking lineage.
         /// </summary>
         protected readonly IDataLineageTracker _lineageTracker;
 
@@ -30,6 +31,9 @@ namespace DataLineage.Tracking.Mapping
         public abstract TResult Map(TSource sources);
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// This method is a no-op by default. Derived classes should override it to implement specific lineage tracking logic.
+        /// </remarks>
         public virtual async Task Track(TSource sources, TResult result)
         {
             await Task.CompletedTask;

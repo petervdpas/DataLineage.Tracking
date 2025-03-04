@@ -3,16 +3,16 @@ using System.Collections.Generic;
 namespace DataLineage.Tracking.Interfaces
 {
     /// <summary>
-    /// Defines an interface for mapping source objects to target objects.
+    /// Defines an interface for mapping a collection of source objects to a single target result.
     /// </summary>
     /// <typeparam name="TResult">The type of the mapped result.</typeparam>
     public interface IGenericMapper<TResult>
     {
         /// <summary>
-        /// Maps a collection of source data objects to the result type.
+        /// Maps a collection of heterogeneous source data objects to a result of type <typeparamref name="TResult"/>.
         /// </summary>
-        /// <param name="sourceData">The collection of source objects to be mapped.</param>
-        /// <returns>The mapped result object.</returns>
+        /// <param name="sourceData">A collection of source objects of various types to be mapped.</param>
+        /// <returns>A mapped result of type <typeparamref name="TResult"/> based on the provided sources.</returns>
         TResult Map(List<object> sourceData);
     }
 }

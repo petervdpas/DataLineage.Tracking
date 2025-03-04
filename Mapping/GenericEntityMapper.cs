@@ -5,21 +5,22 @@ using DataLineage.Tracking.Interfaces;
 namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
-    /// Represents an abstract base class for mappers that track lineage.
-    /// Implements <see cref="IGenericTracker{TResult}"/>.
+    /// Represents an abstract base class for mappers that track data lineage.
+    /// Implements <see cref="IGenericTracker{TResult}"/> to support both mapping and lineage tracking.
     /// </summary>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
     public abstract class GenericEntityMapper<TResult> : IGenericTracker<TResult>
     {
         /// <summary>
-        /// The lineage tracker instance used for tracking data transformations.
+        /// The lineage tracker instance used to record data transformations.
+        /// This is available to derived classes for tracking lineage.
         /// </summary>
         protected readonly IDataLineageTracker _lineageTracker;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TrackableEntityMapper{TSource, TResult}"/> class.
+        /// Initializes a new instance of the <see cref="GenericEntityMapper{TResult}"/> class.
         /// </summary>
-        /// <param name="lineageTracker">The data lineage tracker responsible for tracking data transformations.</param>
+        /// <param name="lineageTracker">The data lineage tracker used for tracking transformations.</param>
         public GenericEntityMapper(IDataLineageTracker lineageTracker)
         {
             _lineageTracker = lineageTracker;
@@ -29,9 +30,12 @@ namespace DataLineage.Tracking.Mapping
         public abstract TResult Map(List<object> sources);
 
         /// <inheritdoc/>
-        public Task Track(List<object> sources, TResult result)
+        /// <remarks>
+        /// This method is a no-op by default. Derived classes should override it to implement specific lineage tracking logic.
+        /// </remarks>
+        public virtual async Task Track(List<object> sources, TResult result)
         {
-            throw new System.NotImplementedException();
+            await Task.CompletedTask;
         }
     }
 }

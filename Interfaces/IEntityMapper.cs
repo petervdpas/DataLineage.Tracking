@@ -1,19 +1,17 @@
-using System.Collections.Generic;
-
 namespace DataLineage.Tracking.Interfaces
 {
     /// <summary>
-    /// Defines an interface for mapping source objects to target objects.
+    /// Defines a generic interface for mapping source objects to target objects.
     /// </summary>
-    /// <typeparam name="TSource">The type of the source data.</typeparam>
-    /// <typeparam name="TResult">The type of the mapped result.</typeparam>
+    /// <typeparam name="TSource">The type of the source object.</typeparam>
+    /// <typeparam name="TResult">The type of the mapped result object.</typeparam>
     public interface IEntityMapper<TSource, TResult>
     {
         /// <summary>
-        /// Map a the source data type to the result type.
+        /// Maps a source object to a target object of type <typeparamref name="TResult"/>.
         /// </summary>
-        /// <param name="sourceData">The source type to be mapped.</param>
-        /// <returns>The mapped result object(type).</returns>
+        /// <param name="sourceData">The source object to be mapped.</param>
+        /// <returns>The mapped object of type <typeparamref name="TResult"/>.</returns>
         TResult Map(TSource sourceData);
     }
 }
