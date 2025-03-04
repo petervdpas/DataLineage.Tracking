@@ -10,10 +10,10 @@ namespace DataLineage.Tracking.Interfaces
     public interface IEntityMapper<TSource, TResult>
     {
         /// <summary>
-        /// Maps a collection of source data objects to the result type.
+        /// Map a the source data type to the result type.
         /// </summary>
-        /// <param name="sourceData">The collection of source objects to be mapped.</param>
-        /// <returns>The mapped result object.</returns>
-        TResult Map(List<TSource> sourceData);
+        /// <param name="sourceData">The source type to be mapped.</param>
+        /// <returns>The mapped result object(type).</returns>
+        TResult Map(TSource sourceData);
     }
 }

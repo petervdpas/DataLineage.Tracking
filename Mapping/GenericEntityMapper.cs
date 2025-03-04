@@ -6,11 +6,10 @@ namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
     /// Represents an abstract base class for mappers that track lineage.
-    /// Implements <see cref="IEntityTracker{TSource, TResult}"/>.
+    /// Implements <see cref="IGenericTracker{TResult}"/>.
     /// </summary>
-    /// <typeparam name="TSource">The type of the source objects.</typeparam>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
-    public abstract class TrackableEntityMapper<TSource, TResult> : IEntityTracker<TSource, TResult>
+    public abstract class GenericEntityMapper<TResult> : IGenericTracker<TResult>
     {
         /// <summary>
         /// The lineage tracker instance used for tracking data transformations.
@@ -21,18 +20,18 @@ namespace DataLineage.Tracking.Mapping
         /// Initializes a new instance of the <see cref="TrackableEntityMapper{TSource, TResult}"/> class.
         /// </summary>
         /// <param name="lineageTracker">The data lineage tracker responsible for tracking data transformations.</param>
-        public TrackableEntityMapper(IDataLineageTracker lineageTracker)
+        public GenericEntityMapper(IDataLineageTracker lineageTracker)
         {
             _lineageTracker = lineageTracker;
         }
 
         /// <inheritdoc/>
-        public abstract TResult Map(TSource sources);
+        public abstract TResult Map(List<object> sources);
 
         /// <inheritdoc/>
-        public virtual async Task Track(TSource sources, TResult result)
+        public Task Track(List<object> sources, TResult result)
         {
-            await Task.CompletedTask;
+            throw new System.NotImplementedException();
         }
     }
 }

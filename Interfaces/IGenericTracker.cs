@@ -6,9 +6,8 @@ namespace DataLineage.Tracking.Interfaces
     /// <summary>
     /// Defines an interface for mappers that support lineage tracking.
     /// </summary>
-    /// <typeparam name="TSource">The type of the source objects.</typeparam>
     /// <typeparam name="TResult">The type of the mapped target object.</typeparam>
-    public interface IEntityTracker<TSource, TResult> : IEntityMapper<TSource, TResult>
+    public interface IGenericTracker<TResult> : IGenericMapper<TResult>
     {
         /// <summary>
         /// Tracks data lineage asynchronously for a mapping operation.
@@ -16,6 +15,6 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="sources">The collection of source objects.</param>
         /// <param name="result">The mapped target object.</param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
-        Task Track(TSource sources, TResult result);
+        Task Track(List<object> sources, TResult result);
     }
 }

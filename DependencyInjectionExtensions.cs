@@ -56,16 +56,26 @@ namespace DataLineage.Tracking
             foreach (var implementationType in implTypes)
             {
                 var baseType = implementationType.BaseType;
-                
+
                 // Ensure baseType is generic before calling GetGenericTypeDefinition() WrapperInterface??
                 if (!baseType!.IsGenericType) continue;
-                
+
                 var baseGenericType = baseType.GetGenericTypeDefinition();
 
                 if (baseGenericType == typeof(TrackableEntityMapper<,>))
                 {
                     var interfaceType = implementationType.GetInterfaces()
                         .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEntityTracker<,>));
+
+                    if (interfaceType != null)
+                    {
+                        services.AddSingleton(interfaceType, implementationType);
+                    }
+                }
+                else if (baseGenericType == typeof(GenericEntityMapper<>))
+                {
+                    var interfaceType = implementationType.GetInterfaces()
+                        .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGenericTracker<>));
 
                     if (interfaceType != null)
                     {
