@@ -24,7 +24,7 @@ namespace DataLineage.Tracking
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to which the services should be added.
         /// </param>
-        /// <param name="assembly"></param>
+        /// <param name="assembly">The assembly containing mappers to register.</param>
         /// <param name="configureOptions">
         /// A delegate to configure <see cref="DataLineageOptions"/>. Optional.
         /// </param>
@@ -52,15 +52,35 @@ namespace DataLineage.Tracking
             var implTypes = assembly.GetTypes()
                 .Where(x => x.IsClass && !x.IsAbstract &&
                             x.BaseType != null &&
-                            x.BaseType.IsGenericType &&
-                            x.BaseType == typeof(BaseMapper<,>))
+                            x.BaseType.IsGenericType)
                 .ToList();
 
             foreach (var implementationType in implTypes)
             {
-                var interfaceType = implementationType.GetInterfaces()
-                    .FirstOrDefault(x => x.IsGenericType && x.GetType() == typeof(IEntityMapper<,>));
-                services.AddSingleton(interfaceType!, implementationType);
+                var baseType = implementationType.BaseType!.GetGenericTypeDefinition();
+
+                // ✅ Check if this is a standard mapper (without lineage tracking)
+                if (baseType == typeof(BaseMapper<,>))
+                {
+                    var interfaceType = implementationType.GetInterfaces()
+                        .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEntityMapper<,>));
+
+                    if (interfaceType != null)
+                    {
+                        services.AddSingleton(interfaceType, implementationType);
+                    }
+                }
+                // ✅ Check if this is a trackable mapper (with lineage tracking)
+                else if (baseType == typeof(TrackableBaseMapper<,>))
+                {
+                    var interfaceType = implementationType.GetInterfaces()
+                        .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ITrackableMapper<,>));
+
+                    if (interfaceType != null)
+                    {
+                        services.AddSingleton(interfaceType, implementationType);
+                    }
+                }
             }
 
             return services;
