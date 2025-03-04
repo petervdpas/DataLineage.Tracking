@@ -6,8 +6,9 @@ namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
     /// Represents an abstract base class for mappers that track lineage.
+    /// Implements <see cref="ITrackableMapper{TSource, TResult}"/>.
     /// </summary>
-    /// <typeparam name="TSource">The type of the source entity.</typeparam>
+    /// <typeparam name="TSource">The type of the source objects.</typeparam>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
     public abstract class TrackableBaseMapper<TSource, TResult> : ITrackableMapper<TSource, TResult>
     {
@@ -26,12 +27,12 @@ namespace DataLineage.Tracking.Mapping
         }
 
         /// <inheritdoc/>
-        public abstract TResult Map(IEnumerable<TSource> sourceData);
+        public abstract TResult Map(IEnumerable<TSource> sources);
 
         /// <inheritdoc/>
-        public virtual Task Track()
+        public virtual async Task Track(IEnumerable<TSource> sources, TResult result)
         {
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
     }
 }

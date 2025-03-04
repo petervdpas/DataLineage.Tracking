@@ -50,17 +50,20 @@ namespace DataLineage.Tracking
             services.AddSingleton<IDataLineageTracker>(sp => new DataLineageTracker(sinks));
 
             var implTypes = assembly.GetTypes()
-                .Where(x => x.IsClass && !x.IsAbstract &&
-                            x.BaseType != null &&
-                            x.BaseType.IsGenericType)
+                .Where(type => type.IsClass && !type.IsAbstract && type.BaseType != null)
                 .ToList();
 
             foreach (var implementationType in implTypes)
             {
-                var baseType = implementationType.BaseType!.GetGenericTypeDefinition();
+                var baseType = implementationType.BaseType;
+                
+                // 🔹 Ensure baseType is generic before calling GetGenericTypeDefinition()
+                if (!baseType!.IsGenericType) continue;
+                
+                var baseGenericType = baseType.GetGenericTypeDefinition();
 
                 // ✅ Check if this is a standard mapper (without lineage tracking)
-                if (baseType == typeof(BaseMapper<,>))
+                if (baseGenericType == typeof(BaseMapper<,>))
                 {
                     var interfaceType = implementationType.GetInterfaces()
                         .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEntityMapper<,>));
@@ -71,7 +74,7 @@ namespace DataLineage.Tracking
                     }
                 }
                 // ✅ Check if this is a trackable mapper (with lineage tracking)
-                else if (baseType == typeof(TrackableBaseMapper<,>))
+                else if (baseGenericType == typeof(TrackableBaseMapper<,>))
                 {
                     var interfaceType = implementationType.GetInterfaces()
                         .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ITrackableMapper<,>));
