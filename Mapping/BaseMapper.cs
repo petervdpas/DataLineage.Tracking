@@ -4,7 +4,7 @@ using DataLineage.Tracking.Interfaces;
 namespace DataLineage.Tracking.Mapping
 {
     /// <summary>
-    /// Represents an abstract base class for mapping entities from a source type to a result type.
+    /// Represents an abstract base class for mapping entities from multiple source objects to a result type.
     /// Implements <see cref="IEntityMapper{TSource, TResult}"/>.
     /// </summary>
     /// <typeparam name="TSource">The type of the source entity.</typeparam>
