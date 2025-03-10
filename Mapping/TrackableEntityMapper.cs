@@ -10,7 +10,7 @@ namespace DataLineage.Tracking.Mapping
     /// </summary>
     /// <typeparam name="TSource">The type of the source object.</typeparam>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
-    public abstract class TrackableEntityMapper<TSource, TResult> : IEntityTracker<TSource, TResult>
+    public abstract class TrackableEntityMapper<TSource, TResult> : IEntityTracker<TSource, TResult> where TSource : class where TResult : class
     {
         /// <summary>
         /// The lineage tracker instance used to record data transformations.
@@ -34,7 +34,7 @@ namespace DataLineage.Tracking.Mapping
         /// <remarks>
         /// This method is a no-op by default. Derived classes should override it to implement specific lineage tracking logic.
         /// </remarks>
-        public virtual async Task Track(TSource sources, TResult result)
+        public virtual async Task Track(TSource? sources = null, TResult? result = null)
         {
             await Task.CompletedTask;
         }

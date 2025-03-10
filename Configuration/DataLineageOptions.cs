@@ -16,5 +16,17 @@ namespace DataLineage.Tracking.Configuration
         /// Default is false (skips nulls).
         /// </summary>
         public bool ThrowOnNullSources { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the name of the source system in the data lineage tracking process.
+        /// This is used to identify the originating system of the data.
+        /// </summary>
+        public required string? SourceSystemName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the target system in the data lineage tracking process.
+        /// This is used to identify the destination system where the data is mapped or stored.
+        /// </summary>
+        public required string? TargetSystemName { get; set; }
     }
 }

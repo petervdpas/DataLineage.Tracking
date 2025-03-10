@@ -47,7 +47,11 @@ namespace DataLineage.Tracking
                     .AddSingleton<IConfigureOptions<DataLineageOptions>, ConfigureDataLineageOptions>();
 
             // Register lineage tracker with optional sinks
-            services.AddSingleton<IDataLineageTracker>(sp => new DataLineageTracker(sinks));
+            services.AddSingleton<IDataLineageTracker>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<DataLineageOptions>>().Value;
+                return new DataLineageTracker(options, sinks);
+            });
 
             var implTypes = assembly.GetTypes()
                 .Where(type => type.IsClass && !type.IsAbstract && type.BaseType != null)

@@ -16,6 +16,8 @@ namespace DataLineage.Tracking.Configuration
         {
             options.EnableLineageTracking = true; // Default: Tracking is enabled
             options.ThrowOnNullSources = false;   // Default: Null sources are ignored
+            options.SourceSystemName = "SourceSystem"; // Default: Source system name
+            options.TargetSystemName = "TargetSystem"; // Default: Target system name
         }
     }
 }

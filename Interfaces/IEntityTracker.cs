@@ -7,7 +7,7 @@ namespace DataLineage.Tracking.Interfaces
     /// </summary>
     /// <typeparam name="TSource">The type of the source object.</typeparam>
     /// <typeparam name="TResult">The type of the mapped target object.</typeparam>
-    public interface IEntityTracker<TSource, TResult> : IEntityMapper<TSource, TResult>
+    public interface IEntityTracker<TSource, TResult> : IEntityMapper<TSource, TResult> where TSource : class where TResult : class
     {
         /// <summary>
         /// Tracks data lineage asynchronously for a mapping operation.
@@ -17,6 +17,6 @@ namespace DataLineage.Tracking.Interfaces
         /// <returns>
         /// A task that completes once the data lineage has been recorded.
         /// </returns>
-        Task Track(TSource sources, TResult result);
+        Task Track(TSource? sources = null, TResult? result = null);
     }
 }

@@ -9,7 +9,7 @@ namespace DataLineage.Tracking.Mapping
     /// Implements <see cref="IGenericTracker{TResult}"/> to support both mapping and lineage tracking.
     /// </summary>
     /// <typeparam name="TResult">The type of the mapped result entity.</typeparam>
-    public abstract class GenericEntityMapper<TResult> : IGenericTracker<TResult>
+    public abstract class GenericEntityMapper<TResult> : IGenericTracker<TResult> where TResult : class
     {
         /// <summary>
         /// The lineage tracker instance used to record data transformations.
@@ -33,7 +33,7 @@ namespace DataLineage.Tracking.Mapping
         /// <remarks>
         /// This method is a no-op by default. Derived classes should override it to implement specific lineage tracking logic.
         /// </remarks>
-        public virtual async Task Track(List<object> sources, TResult result)
+        public virtual async Task Track(List<object>? sources = null, TResult? result = null)
         {
             await Task.CompletedTask;
         }

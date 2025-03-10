@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using DataLineage.Tracking.Configuration;
 using DataLineage.Tracking.Interfaces;
 using DataLineage.Tracking.Models;
 using DataLineage.Tracking.Sinks;
@@ -13,15 +17,19 @@ namespace DataLineage.Tracking.Lineage
     /// </summary>
     public class DataLineageTracker : IDataLineageTracker
     {
+        private readonly DataLineageOptions _options;
         private readonly HashSet<LineageEntry> _lineageEntries = [];
         private readonly List<ILineageSink> _sinks = [];
 
         /// <summary>
         /// Initializes a new instance of <see cref="DataLineageTracker"/> with optional sinks.
         /// </summary>
+        /// <param name="options">Configuration options</param>
         /// <param name="sinks">Optional sinks for storing lineage entries.</param>
-        public DataLineageTracker(IEnumerable<ILineageSink>? sinks = null)
+        public DataLineageTracker(DataLineageOptions options,  IEnumerable<ILineageSink>? sinks = null)
         {
+            _options = options;
+            
             if (sinks != null)
             {
                 _sinks.AddRange(sinks);
@@ -30,14 +38,14 @@ namespace DataLineage.Tracking.Lineage
 
         /// <inheritdoc/>
         public async Task TrackAsync(
-            string sourceSystem, string sourceEntity, string sourceField, bool sourceBusinessKey, string sourceDescription,
+            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
             string transformationRule,
-            string targetSystem, string targetEntity, string targetField, bool targetBusinessKey, string targetDescription)
+            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string targetDescription)
         {
             var newEntry = new LineageEntry(
-                sourceSystem, sourceEntity, sourceField, sourceBusinessKey, sourceDescription,
+                sourceSystem ?? _options.SourceSystemName, sourceEntity, sourceField, sourceValidated, sourceDescription,
                 transformationRule,
-                targetSystem, targetEntity, targetField, targetBusinessKey, targetDescription
+                targetSystem ?? _options.TargetSystemName, targetEntity, targetField, targetValidated, targetDescription
             );
 
             // ✅ **Check existence before adding**
@@ -51,6 +59,36 @@ namespace DataLineage.Tracking.Lineage
                 var insertTasks = _sinks.Select(sink => sink.InsertLineageAsync(new[] { newEntry }));
                 await Task.WhenAll(insertTasks);
             }
+        }
+
+        /// <inheritdoc/>
+        public Task TrackAsync<TSource, TTarget>(
+            Expression<Func<TSource, object>> sourceExpr, 
+            Expression<Func<TTarget, object>> targetExpr, 
+            string? sourceSystem = null, 
+            bool sourceValidated = false, 
+            string? sourceDescription = null, 
+            string? transformationRule = null, 
+            string? targetSystem = null, 
+            bool targetValidated = false, 
+            string? targetDescription = null)
+        {
+            MemberExpression? sourceExpression = sourceExpr.Body as MemberExpression;
+            MemberExpression? targetExpression = targetExpr.Body as MemberExpression;
+
+            return TrackAsync(
+                sourceSystem ?? _options.SourceSystemName,
+                typeof(TSource).Name,
+                sourceExpression?.Member.Name ?? "Unresolved",
+                sourceValidated,
+                sourceDescription!,
+                transformationRule!,
+                targetSystem ?? _options.TargetSystemName,
+                typeof(TTarget).Name,
+                targetExpression?.Member.Name ?? "Unresolved",
+                targetValidated,
+                targetDescription!
+            );
         }
 
         /// <inheritdoc/>
