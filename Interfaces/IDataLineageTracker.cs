@@ -28,17 +28,17 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="targetDescription">Additional context or business meaning of the target field.</param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
         Task TrackAsync(
-            string sourceSystem,
+            string? sourceSystem,
             string sourceEntity,
             string sourceField,
             bool sourceValidated,
-            string sourceDescription,
-            string transformationRule,
-            string targetSystem,
+            string? sourceDescription,
+            string? transformationRule,
+            string? targetSystem,
             string targetEntity,
             string targetField,
             bool targetValidated,
-            string targetDescription);
+            string? targetDescription);
 
         /// <summary>
         /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.

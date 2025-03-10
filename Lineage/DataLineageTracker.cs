@@ -38,15 +38,14 @@ namespace DataLineage.Tracking.Lineage
 
         /// <inheritdoc/>
         public async Task TrackAsync(
-            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
-            string transformationRule,
-            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string targetDescription)
+            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string? sourceDescription,
+            string? transformationRule,
+            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string? targetDescription)
         {
             var newEntry = new LineageEntry(
-                sourceSystem ?? _options.SourceSystemName, sourceEntity, sourceField, sourceValidated, sourceDescription,
-                transformationRule,
-                targetSystem ?? _options.TargetSystemName, targetEntity, targetField, targetValidated, targetDescription
-            );
+                sourceSystem ?? _options.SourceSystemName, sourceEntity, sourceField, sourceValidated, sourceDescription ?? string.Empty,
+                transformationRule ?? string.Empty,
+                targetSystem ?? _options.TargetSystemName, targetEntity, targetField, targetValidated, targetDescription ?? string.Empty);
 
             // ✅ **Check existence before adding**
             bool alreadyExists = await ExistsInSinksAsync(newEntry);
@@ -56,7 +55,7 @@ namespace DataLineage.Tracking.Lineage
                 _lineageEntries.Add(newEntry);
 
                 // 🔹 Store lineage in configured sinks asynchronously
-                var insertTasks = _sinks.Select(sink => sink.InsertLineageAsync(new[] { newEntry }));
+                var insertTasks = _sinks.Select(sink => sink.InsertLineageAsync([newEntry]));
                 await Task.WhenAll(insertTasks);
             }
         }
