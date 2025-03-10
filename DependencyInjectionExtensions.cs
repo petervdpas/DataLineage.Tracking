@@ -40,11 +40,17 @@ namespace DataLineage.Tracking
             Action<DataLineageOptions>? configureOptions = null,
             params ILineageSink[] sinks)
         {
-            // Register configuration
-            services.AddOptions<DataLineageOptions>()
-                    .Configure(configureOptions ?? (_ => { }))
-                    .Services
-                    .AddSingleton<IConfigureOptions<DataLineageOptions>, ConfigureDataLineageOptions>();
+            // Register default configuration
+            services.AddSingleton<IConfigureOptions<DataLineageOptions>, ConfigureDataLineageOptions>();
+
+            // Allow user configuration to override defaults
+            if (configureOptions != null)
+            {
+                services.Configure(configureOptions);
+            }
+
+            // Ensure user settings are applied *after* default settings
+            services.PostConfigure<DataLineageOptions>(options => { });
 
             // Register lineage tracker with optional sinks
             services.AddSingleton<IDataLineageTracker>(sp =>

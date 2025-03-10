@@ -39,12 +39,12 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// A description providing additional context about the source field.
         /// </summary>
-        public string SourceDescription { get; set; }
+        public string? SourceDescription { get; set; }
 
         /// <summary>
         /// The rule or logic that was applied to transform the source field into the target field.
         /// </summary>
-        public string TransformationRule { get; set; }
+        public string? TransformationRule { get; set; }
 
         /// <summary>
         /// The unique identifier or name of the target instance.
@@ -69,7 +69,7 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// A description providing additional context about the target field.
         /// </summary>
-        public string TargetDescription { get; set; }
+        public string? TargetDescription { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineageEntry"/> class with default values.
@@ -105,9 +105,9 @@ namespace DataLineage.Tracking.Models
         /// <param name="targetValidated">Indicates if the target field is validated.</param>
         /// <param name="targetDescription">A description of the target field.</param>
         public LineageEntry(
-            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string sourceDescription,
-            string transformationRule,
-            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string targetDescription)
+            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string? sourceDescription,
+            string? transformationRule,
+            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string? targetDescription)
         {
             SourceSystem = sourceSystem;
             SourceEntity = sourceEntity;

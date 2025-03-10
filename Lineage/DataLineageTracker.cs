@@ -72,8 +72,9 @@ namespace DataLineage.Tracking.Lineage
             bool targetValidated = false, 
             string? targetDescription = null)
         {
-            MemberExpression? sourceExpression = sourceExpr.Body as MemberExpression;
-            MemberExpression? targetExpression = targetExpr.Body as MemberExpression;
+
+            MemberExpression? sourceExpression = GetMemberExpression(sourceExpr);
+            MemberExpression? targetExpression = GetMemberExpression(targetExpr);
 
             return TrackAsync(
                 sourceSystem ?? _options.SourceSystemName,
@@ -108,6 +109,23 @@ namespace DataLineage.Tracking.Lineage
             var existenceChecks = _sinks.Select(sink => sink.ExistsLineageAsync(entry));
             var results = await Task.WhenAll(existenceChecks);
             return results.Any(exists => exists);
+        }
+
+        /// <summary>
+        /// Extracts a MemberExpression from an Expression, handling UnaryExpression cases.
+        /// </summary>
+        private static MemberExpression? GetMemberExpression<T>(Expression<Func<T, object>> expression)
+        {
+            if (expression.Body is MemberExpression memberExpression)
+            {
+                return memberExpression;
+            }
+            else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression operand)
+            {
+                return operand; // Unwrap the cast
+            }
+
+            return null; // Unresolved expression
         }
     }
 }
