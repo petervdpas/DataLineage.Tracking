@@ -46,7 +46,7 @@ namespace DataLineage.Tracking.Lineage
             }
 
             // Convert int classification to DataClassification
-            var convertedClassification = classification.HasValue ? ConvertToDataClassification(classification.Value) : null;
+            var convertedClassification = classification.HasValue ? DataClassification.ParseFromInt(classification.Value) : null;
 
             var newEntry = new LineageEntry(
                 sourceSystem: sourceSystem ?? _options.SourceSystemName, 
@@ -118,21 +118,6 @@ namespace DataLineage.Tracking.Lineage
             var existenceChecks = _sinks.Select(sink => sink.ExistsLineageAsync(entry));
             var results = await Task.WhenAll(existenceChecks);
             return results.Any(exists => exists);
-        }
-
-        /// <summary>
-        /// Converts an integer classification (e.g., 123) into a <see cref="DataClassification"/> object.
-        /// </summary>
-        /// <param name="classification">A three-digit integer representing CIA levels (C-I-A).</param>
-        /// <returns>A <see cref="DataClassification"/> object.</returns>
-        private static DataClassification ConvertToDataClassification(int classification)
-        {
-            if (classification < 111 || classification > 333)
-            {
-                throw new ArgumentException("Invalid classification code. Use a three-digit number between 111 and 333.");
-            }
-
-            return new DataClassification(classification);
         }
 
         /// <summary>

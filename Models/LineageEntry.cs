@@ -18,6 +18,8 @@ namespace DataLineage.Tracking.Models
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault // Avoid writing default values
         };
 
+        private string? _modelReferenceUrl;
+
         /// <summary>
         /// The unique identifier or name of the source instance.
         /// </summary>
@@ -65,10 +67,22 @@ namespace DataLineage.Tracking.Models
 
         /// <summary>
         /// URL reference to the data model (ERD/UML) that defines this lineage entry.
+        /// Must be a valid absolute URL.
         /// </summary>
-        public string? ModelReferenceUrl { get; set; }
+        public string? ModelReferenceUrl
+        {
+            get => _modelReferenceUrl;
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value) && !Uri.TryCreate(value, UriKind.Absolute, out _))
+                {
+                    throw new ArgumentException("Invalid URL format for ModelReferenceUrl.");
+                }
+                _modelReferenceUrl = value;
+            }
+        }
 
-                /// <summary>
+        /// <summary>
         /// The classification of the data using the CIA (Confidentiality, Integrity, Availability) model.
         /// </summary>
         public DataClassification? Classification { get; set; } = new();
@@ -104,12 +118,12 @@ namespace DataLineage.Tracking.Models
         /// <param name="targetField">The specific field in the target entity.</param>
         /// <param name="validated">Indicates if the transformation has been validated.</param>
         /// <param name="tags">A list of tags providing additional context about the transformation.</param>
-        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML).</param>
+        /// <param name="modelReferenceUrl">A valid URL reference to the data model (ERD/UML).</param>
         /// <param name="classification">The CIA classification of the data.</param>
         public LineageEntry(
             string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
-            string? targetSystem, string targetEntity, string targetField, 
+            string? targetSystem, string targetEntity, string targetField,
             bool validated, List<string>? tags, string? modelReferenceUrl, DataClassification? classification)
         {
             SourceSystem = sourceSystem;
@@ -155,10 +169,13 @@ namespace DataLineage.Tracking.Models
         /// <returns>A string representation of the data lineage entry.</returns>
         public override string ToString()
         {
+            string tagsFormatted = Tags is { Count: > 0 } ? $"[{string.Join(", ", Tags)}]" : "None";
+
             return $"{SourceSystem}.{SourceEntity}.{SourceField} " +
                    $"➡ [{TransformationRule}] ➡ " +
                    $"{TargetSystem}.{TargetEntity}.{TargetField} " +
-                   $"(✔: {Validated}, {Tags?.Count ?? 0} tags, {ModelReferenceUrl}, {Classification})";
+                   $"(✔: {Validated}, Tags: {tagsFormatted}, " +
+                   $"Model: \"{ModelReferenceUrl}\", Classification: {Classification})";
         }
 
         /// <summary>

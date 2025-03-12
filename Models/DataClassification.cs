@@ -50,26 +50,10 @@ namespace DataLineage.Tracking.Models
         /// <exception cref="ArgumentException">Thrown if the number is not valid (111-333).</exception>
         public DataClassification(int classificationCode)
         {
-            if (classificationCode < 111 || classificationCode > 333)
-                throw new ArgumentException("Invalid classification code. Use values between 111 and 333.");
-
-            // Extract digits
-            int c = classificationCode / 100 % 10; // First digit (Confidentiality)
-            int i = classificationCode / 10 % 10;  // Second digit (Integrity)
-            int a = classificationCode % 10;       // Third digit (Availability)
-
-            // Validate each digit is between 1 and 3
-            if (!Enum.IsDefined(typeof(ConfidentialityLevel), c) ||
-                !Enum.IsDefined(typeof(IntegrityLevel), i) ||
-                !Enum.IsDefined(typeof(AvailabilityLevel), a))
-            {
-                throw new ArgumentException("Each digit must be 1, 2, or 3.");
-            }
-
-            // Assign values
-            Confidentiality = (ConfidentialityLevel)c;
-            Integrity = (IntegrityLevel)i;
-            Availability = (AvailabilityLevel)a;
+            var classification = ParseFromInt(classificationCode);
+            Confidentiality = classification.Confidentiality;
+            Integrity = classification.Integrity;
+            Availability = classification.Availability;
         }
 
         /// <summary>
@@ -86,7 +70,35 @@ namespace DataLineage.Tracking.Models
         /// </summary>
         /// <param name="classificationCode">A number like 111, 222, 333 representing CIA levels.</param>
         public static implicit operator DataClassification(int classificationCode)
-            => new DataClassification(classificationCode);
+            => new(classificationCode);
+
+        /// <summary>
+        /// Parses a three-digit integer into a <see cref="DataClassification"/> object.
+        /// Ensures all digits are between 1 and 3.
+        /// </summary>
+        /// <param name="classificationCode">A number like 111, 222, 333 representing CIA levels.</param>
+        /// <returns>A <see cref="DataClassification"/> object with the parsed values.</returns>
+        /// <exception cref="ArgumentException">Thrown if any digit is not between 1 and 3.</exception>
+        public static DataClassification ParseFromInt(int classificationCode)
+        {
+            if (classificationCode < 111 || classificationCode > 333)
+            {
+                throw new ArgumentException("Invalid classification code. Use values between 111 and 333.");
+            }
+
+            // Extract digits
+            int c = classificationCode / 100 % 10; // First digit (Confidentiality)
+            int i = classificationCode / 10 % 10;  // Second digit (Integrity)
+            int a = classificationCode % 10;       // Third digit (Availability)
+
+            // Validate each digit (must be 1, 2, or 3)
+            if (c is < 1 or > 3 || i is < 1 or > 3 || a is < 1 or > 3)
+            {
+                throw new ArgumentException("Each digit in the classification code must be 1, 2, or 3.");
+            }
+
+            return new DataClassification((ConfidentialityLevel)c, (IntegrityLevel)i, (AvailabilityLevel)a);
+        }
 
         /// <summary>
         /// Returns the CIA classification as a formatted string (e.g., "C2-I3-A1").
