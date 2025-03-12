@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataLineage.Tracking.Configuration;
 using DataLineage.Tracking.Interfaces;
@@ -29,35 +28,47 @@ namespace DataLineage.Tracking.Lineage
         public DataLineageTracker(DataLineageOptions options,  IEnumerable<ILineageSink>? sinks = null)
         {
             _options = options;
-            
-            if (sinks != null)
-            {
-                _sinks.AddRange(sinks);
-            }
+            if (sinks != null) _sinks.AddRange(sinks);
         }
 
         /// <inheritdoc/>
         public async Task TrackAsync(
-            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string? sourceDescription,
+            string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
-            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string? targetDescription)
+            string? targetSystem, string targetEntity, string targetField, 
+            bool validated, List<string>? tags, string? modelReferenceUrl, int? classification = null)
         {
-            var newEntry = new LineageEntry(
-                sourceSystem ?? _options.SourceSystemName, sourceEntity, sourceField, sourceValidated, sourceDescription ?? string.Empty,
-                transformationRule ?? string.Empty,
-                targetSystem ?? _options.TargetSystemName, targetEntity, targetField, targetValidated, targetDescription ?? string.Empty);
 
-            // ✅ **Check existence before adding**
-            bool alreadyExists = await ExistsInSinksAsync(newEntry);
-
-            if (!alreadyExists)
+            if (string.IsNullOrWhiteSpace(sourceEntity) || string.IsNullOrWhiteSpace(sourceField) ||
+                string.IsNullOrWhiteSpace(targetEntity) || string.IsNullOrWhiteSpace(targetField))
             {
-                _lineageEntries.Add(newEntry);
-
-                // 🔹 Store lineage in configured sinks asynchronously
-                var insertTasks = _sinks.Select(sink => sink.InsertLineageAsync([newEntry]));
-                await Task.WhenAll(insertTasks);
+                throw new ArgumentException("Source and Target entity names and fields cannot be null or empty.");
             }
+
+            // Convert int classification to DataClassification
+            var convertedClassification = classification.HasValue ? ConvertToDataClassification(classification.Value) : null;
+
+            var newEntry = new LineageEntry(
+                sourceSystem: sourceSystem ?? _options.SourceSystemName, 
+                sourceEntity: sourceEntity, 
+                sourceField: sourceField, 
+                transformationRule: transformationRule ?? string.Empty,
+                targetSystem: targetSystem ?? _options.TargetSystemName, 
+                targetEntity: targetEntity, 
+                targetField: targetField,
+                validated: validated, 
+                tags: tags, 
+                modelReferenceUrl: modelReferenceUrl ?? string.Empty, 
+                classification: convertedClassification);
+
+            if (await ExistsInSinksAsync(newEntry))
+            {
+                Console.WriteLine($"[INFO] Lineage entry already exists: {newEntry}");
+                return;
+            }
+
+            _lineageEntries.Add(newEntry);
+            await Task.WhenAll(_sinks.Select(sink => sink.InsertLineageAsync([newEntry])));
         }
 
         /// <inheritdoc/>
@@ -65,30 +76,28 @@ namespace DataLineage.Tracking.Lineage
             Expression<Func<TSource, object>> sourceExpr, 
             Expression<Func<TTarget, object>> targetExpr, 
             string? sourceSystem = null, 
-            bool sourceValidated = false, 
-            string? sourceDescription = null, 
             string? transformationRule = null, 
             string? targetSystem = null, 
-            bool targetValidated = false, 
-            string? targetDescription = null)
+            bool validated = false,
+            List<string>? tags = null,
+            string? modelReferenceUrl = null,
+            int? classification = null)
         {
-
             MemberExpression? sourceExpression = GetMemberExpression(sourceExpr);
             MemberExpression? targetExpression = GetMemberExpression(targetExpr);
 
             return TrackAsync(
-                sourceSystem ?? _options.SourceSystemName,
-                typeof(TSource).Name,
-                sourceExpression?.Member.Name ?? "Unresolved",
-                sourceValidated,
-                sourceDescription!,
-                transformationRule!,
-                targetSystem ?? _options.TargetSystemName,
-                typeof(TTarget).Name,
-                targetExpression?.Member.Name ?? "Unresolved",
-                targetValidated,
-                targetDescription!
-            );
+                sourceSystem: sourceSystem ?? _options.SourceSystemName, 
+                sourceEntity: typeof(TSource).Name,
+                sourceField: sourceExpression?.Member.Name ?? "Unresolved",
+                transformationRule: transformationRule ?? string.Empty,
+                targetSystem: targetSystem ?? _options.TargetSystemName, 
+                targetEntity: typeof(TTarget).Name,
+                targetField: targetExpression?.Member.Name ?? "Unresolved",
+                validated: validated, 
+                tags: tags, 
+                modelReferenceUrl: modelReferenceUrl ?? string.Empty, 
+                classification: classification);
         }
 
         /// <inheritdoc/>
@@ -96,7 +105,7 @@ namespace DataLineage.Tracking.Lineage
         {
             var lineageFromSinks = await Task.WhenAll(_sinks.Select(sink => sink.GetAllLineageAsync()));
             var allEntries = lineageFromSinks.SelectMany(entries => entries).Concat(_lineageEntries);
-            return allEntries.Distinct().ToList();
+            return [.. allEntries.Distinct()];
         }
 
         /// <summary>
@@ -109,6 +118,21 @@ namespace DataLineage.Tracking.Lineage
             var existenceChecks = _sinks.Select(sink => sink.ExistsLineageAsync(entry));
             var results = await Task.WhenAll(existenceChecks);
             return results.Any(exists => exists);
+        }
+
+        /// <summary>
+        /// Converts an integer classification (e.g., 123) into a <see cref="DataClassification"/> object.
+        /// </summary>
+        /// <param name="classification">A three-digit integer representing CIA levels (C-I-A).</param>
+        /// <returns>A <see cref="DataClassification"/> object.</returns>
+        private static DataClassification ConvertToDataClassification(int classification)
+        {
+            if (classification < 111 || classification > 333)
+            {
+                throw new ArgumentException("Invalid classification code. Use a three-digit number between 111 and 333.");
+            }
+
+            return new DataClassification(classification);
         }
 
         /// <summary>

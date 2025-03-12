@@ -18,27 +18,31 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="sourceSystem">The unique identifier or instance name of the source.</param>
         /// <param name="sourceEntity">The type of entity the source belongs to.</param>
         /// <param name="sourceField">The specific field in the source entity that was transformed.</param>
-        /// <param name="sourceValidated">Indicates whether the source field is approved by governance.</param>
-        /// <param name="sourceDescription">Additional context or business meaning of the source field.</param>
         /// <param name="transformationRule">A description of the transformation logic applied to the data.</param>
         /// <param name="targetSystem">The unique identifier or instance name of the target.</param>
         /// <param name="targetEntity">The type of entity the target belongs to.</param>
         /// <param name="targetField">The specific field in the target entity that received the transformed data.</param>
-        /// <param name="targetValidated">Indicates whether the target field is approved by governance.</param>
-        /// <param name="targetDescription">Additional context or business meaning of the target field.</param>
+        /// <param name="validated">Indicates whether the transformation has been validated.</param>
+        /// <param name="tags">A list of contextual tags related to the transformation.</param>
+        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML).</param>
+        /// <param name="classification">
+        /// A three-digit integer representing CIA levels (Confidentiality-Integrity-Availability).
+        /// Example: 123 (C1-I2-A3), 321 (C3-I2-A1), 333 (C3-I3-A3).
+        /// If omitted or null, the classification is considered undefined.
+        /// </param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
         Task TrackAsync(
             string? sourceSystem,
             string sourceEntity,
             string sourceField,
-            bool sourceValidated,
-            string? sourceDescription,
             string? transformationRule,
             string? targetSystem,
             string targetEntity,
             string targetField,
-            bool targetValidated,
-            string? targetDescription);
+            bool validated,
+            List<string>? tags,
+            string? modelReferenceUrl,
+             int? classification = null);
 
         /// <summary>
         /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.
@@ -48,23 +52,27 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="sourceExpression">An expression representing the field in the source entity.</param>
         /// <param name="targetExpression">An expression representing the field in the target entity.</param>
         /// <param name="sourceSystem">The unique identifier or instance name of the source system. (Optional)</param>
-        /// <param name="sourceValidated">Indicates whether the source field is approved by governance. Default is <c>false</c>. (Optional)</param>
-        /// <param name="sourceDescription">Additional context or business meaning of the source field. (Optional)</param>
         /// <param name="transformationRule">A description of the transformation logic applied to the data. (Optional)</param>
         /// <param name="targetSystem">The unique identifier or instance name of the target system. (Optional)</param>
-        /// <param name="targetValidated">Indicates whether the target field is approved by governance. Default is <c>false</c>. (Optional)</param>
-        /// <param name="targetDescription">Additional context or business meaning of the target field. (Optional)</param>
+        /// <param name="validated">Indicates whether the transformation has been validated. (Optional)</param>
+        /// <param name="tags">A list of contextual tags related to the transformation. (Optional)</param>
+        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML). (Optional)</param>
+        /// <param name="classification">
+        /// A three-digit integer representing CIA levels (Confidentiality-Integrity-Availability).
+        /// Example: 123 (C1-I2-A3), 321 (C3-I2-A1), 333 (C3-I3-A3).
+        /// If omitted or null, the classification is considered undefined.
+        /// </param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
         Task TrackAsync<TSource, TTarget>(
             Expression<Func<TSource, object>> sourceExpression,
             Expression<Func<TTarget, object>> targetExpression,
             string? sourceSystem = null,
-            bool sourceValidated = false,
-            string? sourceDescription = null,
             string? transformationRule = null,
             string? targetSystem = null,
-            bool targetValidated = false,
-            string? targetDescription = null);
+            bool validated = false,
+            List<string>? tags = null,
+            string? modelReferenceUrl = null,
+            int? classification = null);
 
         /// <summary>
         /// Retrieves all recorded lineage entries asynchronously, showing how data was mapped from sources to targets.

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,16 +34,6 @@ namespace DataLineage.Tracking.Models
         public string SourceField { get; set; }
 
         /// <summary>
-        /// Indicates if the source field has been validated and approved by governance.
-        /// </summary>
-        public bool SourceValidated { get; set; }
-
-        /// <summary>
-        /// A description providing additional context about the source field.
-        /// </summary>
-        public string? SourceDescription { get; set; }
-
-        /// <summary>
         /// The rule or logic that was applied to transform the source field into the target field.
         /// </summary>
         public string? TransformationRule { get; set; }
@@ -64,12 +56,22 @@ namespace DataLineage.Tracking.Models
         /// <summary>
         /// Indicates if the target field has been validated and approved by governance.
         /// </summary>
-        public bool TargetValidated { get; set; }
+        public bool Validated { get; set; }
 
         /// <summary>
-        /// A description providing additional context about the target field.
+        /// A list of tags providing additional context about the target field.
         /// </summary>
-        public string? TargetDescription { get; set; }
+        public List<string>? Tags { get; set; } = [];
+
+        /// <summary>
+        /// URL reference to the data model (ERD/UML) that defines this lineage entry.
+        /// </summary>
+        public string? ModelReferenceUrl { get; set; }
+
+                /// <summary>
+        /// The classification of the data using the CIA (Confidentiality, Integrity, Availability) model.
+        /// </summary>
+        public DataClassification? Classification { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineageEntry"/> class with default values.
@@ -80,14 +82,14 @@ namespace DataLineage.Tracking.Models
             SourceSystem = string.Empty;
             SourceEntity = string.Empty;
             SourceField = string.Empty;
-            SourceValidated = false;
-            SourceDescription = string.Empty;
             TransformationRule = string.Empty;
             TargetSystem = string.Empty;
             TargetEntity = string.Empty;
             TargetField = string.Empty;
-            TargetValidated = false;
-            TargetDescription = string.Empty;
+            Validated = false;
+            Tags = [];
+            ModelReferenceUrl = string.Empty;
+            Classification = new();
         }
 
         /// <summary>
@@ -96,30 +98,31 @@ namespace DataLineage.Tracking.Models
         /// <param name="sourceSystem">The unique identifier or name of the source instance.</param>
         /// <param name="sourceEntity">The entity type of the source.</param>
         /// <param name="sourceField">The specific field in the source entity.</param>
-        /// <param name="sourceValidated">Indicates if the source field is validated.</param>
-        /// <param name="sourceDescription">A description of the source field.</param>
         /// <param name="transformationRule">The transformation rule applied.</param>
         /// <param name="targetSystem">The unique identifier or name of the target instance.</param>
         /// <param name="targetEntity">The entity type of the target.</param>
         /// <param name="targetField">The specific field in the target entity.</param>
-        /// <param name="targetValidated">Indicates if the target field is validated.</param>
-        /// <param name="targetDescription">A description of the target field.</param>
+        /// <param name="validated">Indicates if the transformation has been validated.</param>
+        /// <param name="tags">A list of tags providing additional context about the transformation.</param>
+        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML).</param>
+        /// <param name="classification">The CIA classification of the data.</param>
         public LineageEntry(
-            string? sourceSystem, string sourceEntity, string sourceField, bool sourceValidated, string? sourceDescription,
+            string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
-            string? targetSystem, string targetEntity, string targetField, bool targetValidated, string? targetDescription)
+            string? targetSystem, string targetEntity, string targetField, 
+            bool validated, List<string>? tags, string? modelReferenceUrl, DataClassification? classification)
         {
             SourceSystem = sourceSystem;
             SourceEntity = sourceEntity;
             SourceField = sourceField;
-            SourceValidated = sourceValidated;
-            SourceDescription = sourceDescription;
             TransformationRule = transformationRule;
             TargetSystem = targetSystem;
             TargetEntity = targetEntity;
             TargetField = targetField;
-            TargetValidated = targetValidated;
-            TargetDescription = targetDescription;
+            Validated = validated;
+            Tags = tags;
+            ModelReferenceUrl = modelReferenceUrl;
+            Classification = classification;
         }
 
         /// <summary>
@@ -153,10 +156,9 @@ namespace DataLineage.Tracking.Models
         public override string ToString()
         {
             return $"{SourceSystem}.{SourceEntity}.{SourceField} " +
-                   $"(✔: {SourceValidated}, {SourceDescription}) " +
                    $"➡ [{TransformationRule}] ➡ " +
                    $"{TargetSystem}.{TargetEntity}.{TargetField} " +
-                   $"(✔: {TargetValidated}, {TargetDescription})";
+                   $"(✔: {Validated}, {Tags?.Count ?? 0} tags, {ModelReferenceUrl}, {Classification})";
         }
 
         /// <summary>
