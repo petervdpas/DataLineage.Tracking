@@ -7,7 +7,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>DataLineage.Tracking</PackageId>
-    <Version>1.0.44</Version>
+    <Version>1.0.46</Version>
     <Authors>Peter van de Pas</Authors>
     <Description>A generic data lineage tracking library for any mapping solution.</Description>
     <PackageTags>DataLineage;Tracking;Logging;Mapping;</PackageTags>

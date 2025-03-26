@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace DataLineage.Tracking.Lineage
             string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
             string? targetSystem, string targetEntity, string targetField, 
-            bool validated, List<string>? tags, string? modelReferenceUrl, int? classification = null)
+            bool validated, List<string>? tags, int? classification = null, ExpandoObject? metaExtra = null)
         {
 
             if (string.IsNullOrWhiteSpace(sourceEntity) || string.IsNullOrWhiteSpace(sourceField) ||
@@ -58,8 +59,8 @@ namespace DataLineage.Tracking.Lineage
                 targetField: targetField,
                 validated: validated, 
                 tags: tags, 
-                modelReferenceUrl: modelReferenceUrl ?? string.Empty, 
-                classification: convertedClassification);
+                classification: convertedClassification,
+                metaExtra: metaExtra);
 
             if (await ExistsInSinksAsync(newEntry))
             {
@@ -80,8 +81,8 @@ namespace DataLineage.Tracking.Lineage
             string? targetSystem = null, 
             bool validated = false,
             List<string>? tags = null,
-            string? modelReferenceUrl = null,
-            int? classification = null)
+            int? classification = null,
+            ExpandoObject? metaExtra = null)
         {
             MemberExpression? sourceExpression = GetMemberExpression(sourceExpr);
             MemberExpression? targetExpression = GetMemberExpression(targetExpr);
@@ -96,8 +97,8 @@ namespace DataLineage.Tracking.Lineage
                 targetField: targetExpression?.Member.Name ?? "Unresolved",
                 validated: validated, 
                 tags: tags, 
-                modelReferenceUrl: modelReferenceUrl ?? string.Empty, 
-                classification: classification);
+                classification: classification,
+                metaExtra: metaExtra);
         }
 
         /// <inheritdoc/>

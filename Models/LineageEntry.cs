@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using System.Dynamic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,8 +17,6 @@ namespace DataLineage.Tracking.Models
             WriteIndented = true, // Pretty-print JSON
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault // Avoid writing default values
         };
-
-        private string? _modelReferenceUrl;
 
         /// <summary>
         /// The unique identifier or name of the source instance.
@@ -66,26 +64,15 @@ namespace DataLineage.Tracking.Models
         public List<string>? Tags { get; set; } = [];
 
         /// <summary>
-        /// URL reference to the data model (ERD/UML) that defines this lineage entry.
-        /// Must be a valid absolute URL.
-        /// </summary>
-        public string? ModelReferenceUrl
-        {
-            get => _modelReferenceUrl;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !Uri.TryCreate(value, UriKind.Absolute, out _))
-                {
-                    throw new ArgumentException("Invalid URL format for ModelReferenceUrl.");
-                }
-                _modelReferenceUrl = value;
-            }
-        }
-
-        /// <summary>
         /// The classification of the data using the CIA (Confidentiality, Integrity, Availability) model.
         /// </summary>
         public DataClassification? Classification { get; set; } = new();
+
+        /// <summary>
+        /// Flexible metadata object to hold arbitrary key-value data.
+        /// </summary>
+        public ExpandoObject? MetaExtra { get; set; }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineageEntry"/> class with default values.
@@ -102,7 +89,6 @@ namespace DataLineage.Tracking.Models
             TargetField = string.Empty;
             Validated = false;
             Tags = [];
-            ModelReferenceUrl = string.Empty;
             Classification = new();
         }
 
@@ -118,13 +104,13 @@ namespace DataLineage.Tracking.Models
         /// <param name="targetField">The specific field in the target entity.</param>
         /// <param name="validated">Indicates if the transformation has been validated.</param>
         /// <param name="tags">A list of tags providing additional context about the transformation.</param>
-        /// <param name="modelReferenceUrl">A valid URL reference to the data model (ERD/UML).</param>
         /// <param name="classification">The CIA classification of the data.</param>
+        /// <param name="metaExtra">Flexible information field to hold user-defined meta data.</param>
         public LineageEntry(
             string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
             string? targetSystem, string targetEntity, string targetField,
-            bool validated, List<string>? tags, string? modelReferenceUrl, DataClassification? classification)
+            bool validated, List<string>? tags, DataClassification? classification, ExpandoObject? metaExtra)
         {
             SourceSystem = sourceSystem;
             SourceEntity = sourceEntity;
@@ -135,8 +121,8 @@ namespace DataLineage.Tracking.Models
             TargetField = targetField;
             Validated = validated;
             Tags = tags;
-            ModelReferenceUrl = modelReferenceUrl;
             Classification = classification;
+            MetaExtra = metaExtra;
         }
 
         /// <summary>
@@ -170,12 +156,12 @@ namespace DataLineage.Tracking.Models
         public override string ToString()
         {
             string tagsFormatted = Tags is { Count: > 0 } ? $"[{string.Join(", ", Tags)}]" : "None";
+            string metaJson = MetaExtra != null ? JsonSerializer.Serialize(MetaExtra, _jsonOptions) : "null";
 
             return $"{SourceSystem}.{SourceEntity}.{SourceField} " +
                    $"➡ [{TransformationRule}] ➡ " +
                    $"{TargetSystem}.{TargetEntity}.{TargetField} " +
-                   $"(✔: {Validated}, Tags: {tagsFormatted}, " +
-                   $"Model: \"{ModelReferenceUrl}\", Classification: {Classification})";
+                   $"(✔: {Validated}, Tags: {tagsFormatted}, Classification: {Classification}, MetaExtra: {metaJson})";
         }
 
         /// <summary>

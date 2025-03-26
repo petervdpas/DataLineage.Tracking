@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DataLineage.Tracking.Models;
@@ -24,11 +25,15 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="targetField">The specific field in the target entity that received the transformed data.</param>
         /// <param name="validated">Indicates whether the transformation has been validated.</param>
         /// <param name="tags">A list of contextual tags related to the transformation.</param>
-        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML).</param>
         /// <param name="classification">
         /// A three-digit integer representing CIA levels (Confidentiality-Integrity-Availability).
         /// Example: 123 (C1-I2-A3), 321 (C3-I2-A1), 333 (C3-I3-A3).
         /// If omitted or null, the classification is considered undefined.
+        /// </param>
+        /// <param name="metaExtra">
+        /// A dynamic metadata object containing user-defined properties relevant to the lineage entry.
+        /// This may include model references, links, documentation identifiers, or other auxiliary information.
+        /// Optional.
         /// </param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
         Task TrackAsync(
@@ -41,8 +46,8 @@ namespace DataLineage.Tracking.Interfaces
             string targetField,
             bool validated,
             List<string>? tags,
-            string? modelReferenceUrl,
-             int? classification = null);
+            int? classification = null,
+            ExpandoObject? metaExtra = null);
 
         /// <summary>
         /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.
@@ -56,11 +61,15 @@ namespace DataLineage.Tracking.Interfaces
         /// <param name="targetSystem">The unique identifier or instance name of the target system. (Optional)</param>
         /// <param name="validated">Indicates whether the transformation has been validated. (Optional)</param>
         /// <param name="tags">A list of contextual tags related to the transformation. (Optional)</param>
-        /// <param name="modelReferenceUrl">A URL reference to the data model (ERD/UML). (Optional)</param>
         /// <param name="classification">
         /// A three-digit integer representing CIA levels (Confidentiality-Integrity-Availability).
         /// Example: 123 (C1-I2-A3), 321 (C3-I2-A1), 333 (C3-I3-A3).
         /// If omitted or null, the classification is considered undefined.
+        /// </param>
+        /// <param name="metaExtra">
+        /// A dynamic metadata object containing user-defined properties relevant to the lineage entry.
+        /// This may include model references, links, documentation identifiers, or other auxiliary information.
+        /// Optional.
         /// </param>
         /// <returns>A task representing the asynchronous tracking operation.</returns>
         Task TrackAsync<TSource, TTarget>(
@@ -71,8 +80,8 @@ namespace DataLineage.Tracking.Interfaces
             string? targetSystem = null,
             bool validated = false,
             List<string>? tags = null,
-            string? modelReferenceUrl = null,
-            int? classification = null);
+            int? classification = null,
+            ExpandoObject? metaExtra = null);
 
         /// <summary>
         /// Retrieves all recorded lineage entries asynchronously, showing how data was mapped from sources to targets.
