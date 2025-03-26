@@ -26,7 +26,7 @@ namespace DataLineage.Tracking.Lineage
         /// </summary>
         /// <param name="options">Configuration options</param>
         /// <param name="sinks">Optional sinks for storing lineage entries.</param>
-        public DataLineageTracker(DataLineageOptions options,  IEnumerable<ILineageSink>? sinks = null)
+        public DataLineageTracker(DataLineageOptions options, IEnumerable<ILineageSink>? sinks = null)
         {
             _options = options;
             if (sinks != null) _sinks.AddRange(sinks);
@@ -36,49 +36,32 @@ namespace DataLineage.Tracking.Lineage
         public async Task TrackAsync(
             string? sourceSystem, string sourceEntity, string sourceField,
             string? transformationRule,
-            string? targetSystem, string targetEntity, string targetField, 
+            string? targetSystem, string targetEntity, string targetField,
             bool validated, List<string>? tags, int? classification = null, ExpandoObject? metaExtra = null)
         {
-
-            if (string.IsNullOrWhiteSpace(sourceEntity) || string.IsNullOrWhiteSpace(sourceField) ||
-                string.IsNullOrWhiteSpace(targetEntity) || string.IsNullOrWhiteSpace(targetField))
-            {
-                throw new ArgumentException("Source and Target entity names and fields cannot be null or empty.");
-            }
-
-            // Convert int classification to DataClassification
             var convertedClassification = classification.HasValue ? DataClassification.ParseFromInt(classification.Value) : null;
 
-            var newEntry = new LineageEntry(
-                sourceSystem: sourceSystem ?? _options.SourceSystemName, 
-                sourceEntity: sourceEntity, 
-                sourceField: sourceField, 
+            await TrackAsync(new LineageEntry(
+                sourceSystem: sourceSystem ?? _options.SourceSystemName,
+                sourceEntity: sourceEntity,
+                sourceField: sourceField,
                 transformationRule: transformationRule ?? string.Empty,
-                targetSystem: targetSystem ?? _options.TargetSystemName, 
-                targetEntity: targetEntity, 
+                targetSystem: targetSystem ?? _options.TargetSystemName,
+                targetEntity: targetEntity,
                 targetField: targetField,
-                validated: validated, 
-                tags: tags, 
+                validated: validated,
+                tags: tags,
                 classification: convertedClassification,
-                metaExtra: metaExtra);
-
-            if (await ExistsInSinksAsync(newEntry))
-            {
-                Console.WriteLine($"[INFO] Lineage entry already exists: {newEntry}");
-                return;
-            }
-
-            _lineageEntries.Add(newEntry);
-            await Task.WhenAll(_sinks.Select(sink => sink.InsertLineageAsync([newEntry])));
+                metaExtra: metaExtra));
         }
 
         /// <inheritdoc/>
-        public Task TrackAsync<TSource, TTarget>(
-            Expression<Func<TSource, object>> sourceExpr, 
-            Expression<Func<TTarget, object>> targetExpr, 
-            string? sourceSystem = null, 
-            string? transformationRule = null, 
-            string? targetSystem = null, 
+        public async Task TrackAsync<TSource, TTarget>(
+            Expression<Func<TSource, object>> sourceExpr,
+            Expression<Func<TTarget, object>> targetExpr,
+            string? sourceSystem = null,
+            string? transformationRule = null,
+            string? targetSystem = null,
             bool validated = false,
             List<string>? tags = null,
             int? classification = null,
@@ -87,18 +70,57 @@ namespace DataLineage.Tracking.Lineage
             MemberExpression? sourceExpression = GetMemberExpression(sourceExpr);
             MemberExpression? targetExpression = GetMemberExpression(targetExpr);
 
-            return TrackAsync(
-                sourceSystem: sourceSystem ?? _options.SourceSystemName, 
+            await TrackAsync(
+                sourceSystem: sourceSystem ?? _options.SourceSystemName,
                 sourceEntity: typeof(TSource).Name,
                 sourceField: sourceExpression?.Member.Name ?? "Unresolved",
                 transformationRule: transformationRule ?? string.Empty,
-                targetSystem: targetSystem ?? _options.TargetSystemName, 
+                targetSystem: targetSystem ?? _options.TargetSystemName,
                 targetEntity: typeof(TTarget).Name,
                 targetField: targetExpression?.Member.Name ?? "Unresolved",
-                validated: validated, 
-                tags: tags, 
+                validated: validated,
+                tags: tags,
                 classification: classification,
                 metaExtra: metaExtra);
+        }
+
+        /// <inheritdoc/>
+        public async Task TrackAsync(LineageEntry lineageEntry) => await TrackAsync([lineageEntry]);
+
+        /// <inheritdoc/>
+        public async Task TrackAsync(IEnumerable<LineageEntry> lineageEntries)
+        {
+            foreach (var lineageEntry in lineageEntries)
+            {
+                if (string.IsNullOrWhiteSpace(lineageEntry.SourceEntity) || string.IsNullOrWhiteSpace(lineageEntry.SourceField) ||
+                string.IsNullOrWhiteSpace(lineageEntry.TargetEntity) || string.IsNullOrWhiteSpace(lineageEntry.TargetField))
+                {
+                    throw new ArgumentException("Source and Target entity names and fields cannot be null or empty.");
+                }
+
+                var newEntry = new LineageEntry(
+                    sourceSystem: lineageEntry.SourceSystem ?? _options.SourceSystemName,
+                    sourceEntity: lineageEntry.SourceEntity,
+                    sourceField: lineageEntry.SourceField,
+                    transformationRule: lineageEntry.TransformationRule ?? string.Empty,
+                    targetSystem: lineageEntry.TargetSystem ?? _options.TargetSystemName,
+                    targetEntity: lineageEntry.TargetEntity,
+                    targetField: lineageEntry.TargetField,
+                    validated: lineageEntry.Validated,
+                    tags: lineageEntry.Tags,
+                    classification: lineageEntry.Classification,
+                    metaExtra: lineageEntry.MetaExtra);
+
+                if (await ExistsInSinksAsync(newEntry))
+                {
+                    Console.WriteLine($"[INFO] Lineage entry already exists: {newEntry}");
+                    return;
+                }
+
+                _lineageEntries.Add(newEntry);
+                await Task.WhenAll(_sinks.Select(sink => sink.InsertLineageAsync([newEntry])));
+            }
+
         }
 
         /// <inheritdoc/>

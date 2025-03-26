@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -73,7 +74,6 @@ namespace DataLineage.Tracking.Models
         /// </summary>
         public ExpandoObject? MetaExtra { get; set; }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LineageEntry"/> class with default values.
         /// This constructor is required for serialization and dependency injection.
@@ -126,6 +126,57 @@ namespace DataLineage.Tracking.Models
         }
 
         /// <summary>
+        /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source entity.</typeparam>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="sourceExpr">An expression representing the field in the source entity.</param>
+        /// <param name="targetExpr">An expression representing the field in the target entity.</param>
+        /// <param name="sourceSystem">The unique identifier or instance name of the source system. (Optional)</param>
+        /// <param name="transformationRule">A description of the transformation logic applied to the data. (Optional)</param>
+        /// <param name="targetSystem">The unique identifier or instance name of the target system. (Optional)</param>
+        /// <param name="validated">Indicates whether the transformation has been validated. (Optional)</param>
+        /// <param name="tags">A list of contextual tags related to the transformation. (Optional)</param>
+        /// <param name="classification">
+        /// A three-digit integer representing CIA levels (Confidentiality-Integrity-Availability).
+        /// Example: 123 (C1-I2-A3), 321 (C3-I2-A1), 333 (C3-I3-A3).
+        /// If omitted or null, the classification is considered undefined.
+        /// </param>
+        /// <param name="metaExtra">
+        /// A dynamic metadata object containing user-defined properties relevant to the lineage entry.
+        /// This may include model references, links, documentation identifiers, or other auxiliary information.
+        /// Optional.
+        /// </param>
+        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        public static LineageEntry FromGeneric<TSource, TResult>(            
+            Expression<Func<TSource, object>> sourceExpr, 
+            Expression<Func<TResult, object>> targetExpr, 
+            string? sourceSystem = null, 
+            string? transformationRule = null, 
+            string? targetSystem = null, 
+            bool validated = false,
+            List<string>? tags = null,
+            int? classification = null,
+            ExpandoObject? metaExtra = null)  where TSource : class where TResult : class
+        {
+            MemberExpression? sourceExpression = GetMemberExpression(sourceExpr);
+            MemberExpression? targetExpression = GetMemberExpression(targetExpr);
+
+            return new LineageEntry(
+                sourceSystem: sourceSystem, 
+                sourceEntity: typeof(TSource).Name,
+                sourceField: sourceExpression?.Member.Name ?? "Unresolved",
+                transformationRule: transformationRule ?? string.Empty,
+                targetSystem: targetSystem, 
+                targetEntity: typeof(TResult).Name,
+                targetField: targetExpression?.Member.Name ?? "Unresolved",
+                validated: validated, 
+                tags: tags, 
+                classification: classification,
+                metaExtra: metaExtra);
+        }
+
+        /// <summary>
         /// Determines whether this instance and another specified <see cref="LineageEntry"/> are equal.
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
@@ -171,6 +222,23 @@ namespace DataLineage.Tracking.Models
         public string ToJson()
         {
             return JsonSerializer.Serialize(this, _jsonOptions);
+        }
+
+        /// <summary>
+        /// Extracts a MemberExpression from an Expression, handling UnaryExpression cases.
+        /// </summary>
+        private static MemberExpression? GetMemberExpression<T>(Expression<Func<T, object>> expression)
+        {
+            if (expression.Body is MemberExpression memberExpression)
+            {
+                return memberExpression;
+            }
+            else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression operand)
+            {
+                return operand; // Unwrap the cast
+            }
+
+            return null; // Unresolved expression
         }
     }
 }

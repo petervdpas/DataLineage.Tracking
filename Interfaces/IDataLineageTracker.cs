@@ -84,6 +84,20 @@ namespace DataLineage.Tracking.Interfaces
             ExpandoObject? metaExtra = null);
 
         /// <summary>
+        /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.
+        /// </summary>
+        /// <param name="lineageEntry">A LineageEntry object</param>
+        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        Task TrackAsync(LineageEntry lineageEntry);
+
+        /// <summary>
+        /// Tracks a data transformation asynchronously using expressions that represent the source and target fields.
+        /// </summary>
+        /// <param name="lineageEntries">A list of LineageEntry objects</param>
+        /// <returns>A task representing the asynchronous tracking operation.</returns>
+        Task TrackAsync(IEnumerable<LineageEntry> lineageEntries);
+
+        /// <summary>
         /// Retrieves all recorded lineage entries asynchronously, showing how data was mapped from sources to targets.
         /// </summary>
         /// <returns>A task resolving to a list of <see cref="LineageEntry"/> objects representing the transformation history.</returns>
